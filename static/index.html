@@ -11,9 +11,9 @@
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-	<link rel="stylesheet" href="static/css/style.css">
+	<link rel="stylesheet" href="/css/style.css">
 
-	<script src="client.js" type="text/javascript" defer></script>
+	<script src="js/client.js" type="text/javascript" defer></script>
 </head>
 <body>
 	<header>
@@ -21,13 +21,15 @@
 	</header>
 	<main>
 		<p id="log">connecting to server...</p>
-		<section>
-			<p id=chat></p>
+		<section id="chatbox">
+			
 		</section>
 
 		<section>
-			<input id="chat-text" type="text" />
+			<input id="chat-text" type="text" /><br>
+			<form id="fileupload"><label for="file">Send a picture: </label><input id="file" type="file" /> </form>
 			<button id="send">Send message!</button>
+
 		</section>
 	</main>
 </body>

@@ -5,23 +5,24 @@
 * author: Krenn Benjamin
 */
 var WebSocketServer = require('websocket').server;
+var express = require('express');
 var http = require('http');
 
+var app = express();
+app.use(express.static('static'));
+var server = http.createServer(app);
+server.listen(8080, function() {
+    console.log("server up.");
+})
+
+
 var messages = [];
+var connections = [];
 
 // Starting the websocket server
-var server = http.createServer(function(request, response) {
-    console.log((new Date()) + ' Received request for ' + request.url);
-    response.writeHead(404);
-    response.end();
-});
-server.listen(8080, function() {
-    console.log('swsc server started on port 8080');
-});
-
-wsServer = new WebSocketServer({
+var wsServer = new WebSocketServer({
     httpServer: server,
-    autoAcceptConnections: false
+    autoAcceptConnections: false,
 });
 
 
@@ -29,24 +30,42 @@ wsServer = new WebSocketServer({
 // Handle requests
 wsServer.on('request', function(request) {
     var connection = request.accept('swscp', request.origin);
-    
+    connections.push(connection);
     for(var i in messages) {
-        connection.sendUTF(messages[i]);
+        connection.sendUTF(JSON.stringify(messages[i]));
     }
 
     console.log((new Date()) + ' Connection accepted.');
     // receiving messages
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            console.log('Received Message: ' + message.utf8Data);
-            console.log('Sending response..');
-            connection.sendUTF(message.utf8Data);
+            try {
+                console.log('Received Message: ' + JSON.parse(message.utf8Data).content);
+                console.log('Sending response..');
+                
+                //send to all connected clients
+                connections.forEach(function(destination){
+                    destination.sendUTF(message.utf8Data);
+                });
 
-            messages.push(message.utf8Data);
+                messages.push(JSON.parse(message.utf8Data));
+            } catch (err) {
+                console.log(err);
+            }
         }
     });
     connection.on('close', function(reasonCode, description) {
         console.log((new Date()) + '  client: ' + connection.remoteAddress + ' disconnected.');
+        // remove the connection
+        var index = connections.indexOf(connection);
+        if (index !== -1) {
+            // remove the connection from the pool
+            connections.splice(index, 1);
+        }
     });
+
+    connection.on('error', function(err) {
+        console.log(err);
+    })
 });
 
